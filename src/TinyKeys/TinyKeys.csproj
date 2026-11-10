@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>TinyKeys</AssemblyName>
+    <RootNamespace>TinyKeys</RootNamespace>
+    <Version>1.1.2</Version>
+    <Product>TinyKeys</Product>
+    <Description>Mouse-to-keyboard control panel for Bilibili playback.</Description>
+  </PropertyGroup>
+
+</Project>
+
+
+
+
