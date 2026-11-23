@@ -20,6 +20,8 @@
         SourceInitialized="Window_SourceInitialized"
         Loaded="Window_Loaded"
         Closed="Window_Closed"
+        Activated="Window_Activated"
+        ContentRendered="Window_ContentRendered"
         StateChanged="Window_StateChanged"
         PreviewMouseLeftButtonUp="Window_PreviewMouseLeftButtonUp">
 

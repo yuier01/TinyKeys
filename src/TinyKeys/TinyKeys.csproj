@@ -9,13 +9,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>TinyKeys</AssemblyName>
     <RootNamespace>TinyKeys</RootNamespace>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <Product>TinyKeys</Product>
     <Description>Mouse-to-keyboard control panel for Bilibili playback.</Description>
   </PropertyGroup>
 
 </Project>
-
-
-
-

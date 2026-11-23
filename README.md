@@ -28,6 +28,23 @@ dist\TinyKeys.exe
 
 发布物需要 .NET 8 Desktop Runtime。构建输出目录 `dist/` 不提交到仓库。
 
+## 启动诊断日志
+
+从 v1.1.3 起，每次启动会追加一份启动阶段日志到这里：
+
+```text
+%LOCALAPPDATA%\TinyKeys\logs\startup.log
+```
+
+日志只包含时间戳、阶段名称、耗时、Windows/.NET 版本，不包含按键、窗口标题或浏览内容。复现一次“长时间不启动后的慢启动”后，把整个 `startup.log` 发出来即可定位耗时发生在：
+
+- 进程启动到 `App.OnStartup`：宿主 / CLR / WPF 初始化、杀毒扫描
+- `InitializeComponent`：XAML 和控件创建
+- `Window.Show` / `SourceInitialized` / `ContentRendered`：WPF 窗口初始化
+- `volume wheel hook installed`：全局鼠标钩子安装
+
+如果日志里的 `Process start` 离你双击的时间已经过了数秒，而第一行 `sinceProcess` 很小，说明延迟发生在 TinyKeys 进程创建之前（例如 Windows/安全软件扫描）。日志超过 512 KB 会自动轮换为 `startup.old.log`。
+
 ## 使用
 
 1. 先点击一下 B 站视频页面，让浏览器成为最近使用的窗口。

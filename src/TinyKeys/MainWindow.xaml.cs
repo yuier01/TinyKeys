@@ -4,6 +4,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using TinyKeys.Controls;
+using TinyKeys.Diagnostics;
 using TinyKeys.Interop;
 using TinyKeys.Services;
 
@@ -30,14 +31,18 @@ public partial class MainWindow : Window
     private int _repeatCount;
     private int _wheelAccumulator;
     private IntPtr _windowHandle;
+    private bool _firstActivationLogged;
 
     public MainWindow(IntPtr initialTarget)
     {
+        StartupTrace.Mark("MainWindow ctor begin");
         InitializeComponent();
+        StartupTrace.Mark("InitializeComponent done");
 
         _initialTarget = initialTarget;
         _defaultHintBrush = HintText.Foreground;
         _foregroundTracker = new ForegroundTracker(initialTarget);
+        StartupTrace.Mark("ForegroundTracker created");
 
         _holdTimer = new DispatcherTimer(DispatcherPriority.Normal, Dispatcher)
         {
@@ -50,22 +55,46 @@ public partial class MainWindow : Window
             Interval = TimeSpan.FromSeconds(2.4)
         };
         _hintTimer.Tick += HintTimer_Tick;
+        StartupTrace.Mark("MainWindow ctor done");
     }
 
     private void Window_SourceInitialized(object? sender, EventArgs e)
     {
+        StartupTrace.Mark("SourceInitialized begin");
         WindowPlacement.PositionAtStartup(this, _initialTarget);
+        StartupTrace.Mark("Window placement done");
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        StartupTrace.Mark("Window.Loaded begin");
         _windowHandle = new WindowInteropHelper(this).Handle;
+        StartupTrace.Mark("Loaded: window handle acquired");
         _volumeWheelHook = new VolumeWheelHook(HandleVolumeWheel);
+        StartupTrace.Mark("Loaded: volume wheel hook installed");
 
         if (!_volumeWheelHook.IsInstalled)
         {
             ShowHint("滚轮音量初始化失败，请重启 TinyKeys", isError: true);
         }
+
+        StartupTrace.Mark("Window.Loaded done");
+    }
+
+    private void Window_Activated(object? sender, EventArgs e)
+    {
+        if (_firstActivationLogged)
+        {
+            return;
+        }
+
+        _firstActivationLogged = true;
+        StartupTrace.Mark("First Window.Activated");
+    }
+
+    private void Window_ContentRendered(object? sender, EventArgs e)
+    {
+        StartupTrace.Mark("Window.ContentRendered (UI ready)");
     }
 
     private void Window_Closed(object? sender, EventArgs e)
