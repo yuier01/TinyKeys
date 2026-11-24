@@ -1,6 +1,6 @@
 # TinyKeys
 
-一个白色小面板，用鼠标完成 B 站网页视频的常用快捷键操作。
+一个白色小面板，用鼠标完成 B 站网页视频的常用快捷键操作。使用轻量的 WinForms / .NET Framework 4.8 实现，避免 WPF 的冷启动开销。
 
 - **←**：左方向键（后退）
 - **空格**：播放 / 暂停
@@ -13,35 +13,37 @@
 
 ## 运行
 
-从源码运行（需要 .NET 8 SDK）：
+从源码运行（需要 .NET SDK；项目目标为 .NET Framework 4.8）：
 
 ```powershell
 dotnet run --project src\TinyKeys\TinyKeys.csproj
 ```
 
-发布为单文件 exe 后，运行生成物：
+直接运行已构建的版本：
 
 ```powershell
-dotnet publish src\TinyKeys\TinyKeys.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o dist
 dist\TinyKeys.exe
 ```
 
-发布物需要 .NET 8 Desktop Runtime。构建输出目录 `dist/` 不提交到仓库。
+发布物使用 Windows 自带的 .NET Framework 4.8（Windows 10 / 11 默认已安装）。`dist` 目录中的 `TinyKeys.exe.config` 需要和 exe 放在一起。构建输出目录 `dist/` 不提交到仓库。
+
+> v1.2.0 把界面从 WPF / .NET 8 改为 WinForms / .NET Framework 4.8。之前的冷启动日志显示约 8 秒主要耗在 WPF / .NET 8 的加载和 XAML 初始化上；WinForms 版本当前日志中的首帧时间约为 0.2 秒级。
 
 ## 启动诊断日志
 
-从 v1.1.3 起，每次启动会追加一份启动阶段日志到这里：
+每次启动会追加一份启动阶段日志到这里（v1.2.0 起记录 WinForms 阶段）：
 
 ```text
 %LOCALAPPDATA%\TinyKeys\logs\startup.log
 ```
 
-日志只包含时间戳、阶段名称、耗时、Windows/.NET 版本，不包含按键、窗口标题或浏览内容。复现一次“长时间不启动后的慢启动”后，把整个 `startup.log` 发出来即可定位耗时发生在：
+日志只包含时间戳、阶段名称、耗时、Windows/.NET 版本，不包含按键、窗口标题或浏览内容。如果之后仍然遇到冷启动变慢，把整个 `startup.log` 发出来即可定位耗时发生在：
 
-- 进程启动到 `App.OnStartup`：宿主 / CLR / WPF 初始化、杀毒扫描
-- `InitializeComponent`：XAML 和控件创建
-- `Window.Show` / `SourceInitialized` / `ContentRendered`：WPF 窗口初始化
-- `volume wheel hook installed`：全局鼠标钩子安装
+- 进程启动到 `Program.Main`：CLR / WinForms 初始化和进程创建
+- `MainForm ctor`：字体、按钮和自绘控件创建
+- `OnHandleCreated` / `Window placement`：窗口句柄与初始位置
+- `OnLoad` / `OnShown` / `first paint`：窗口显示和首帧绘制
+- `Volume wheel hook installed`：全局鼠标钩子安装（已延后到首帧之后）
 
 如果日志里的 `Process start` 离你双击的时间已经过了数秒，而第一行 `sinceProcess` 很小，说明延迟发生在 TinyKeys 进程创建之前（例如 Windows/安全软件扫描）。日志超过 512 KB 会自动轮换为 `startup.old.log`。
 
@@ -82,12 +84,13 @@ B 站的“长按右键 2 倍速”依赖的是按键保持状态，而不是连
 - 不读取网页、不注入脚本、不安装浏览器扩展、不联网。
 - 音量是 Windows 系统音量，不是 B 站播放器内部音量。
 - 仅支持已经获得焦点的 B 站视频页面；如果键盘焦点在地址栏或输入框，模拟按键会进入那个控件。
+- WinForms 版本使用 GDI+ 自绘白色卡片和控件，不依赖 WPF；窗口只请求系统原生 `CS_DROPSHADOW`，不额外引入分层窗口，阴影是否显示由 Windows 决定。
 
 ## 构建
 
 ```powershell
 dotnet build TinyKeys.sln -c Release
-dotnet publish src\TinyKeys\TinyKeys.csproj -c Release -r win-x64 --self-contained false -o dist
+dotnet publish src\TinyKeys\TinyKeys.csproj -c Release -o dist
 ```
 
 设计说明见 [docs/DESIGN.md](docs/DESIGN.md)。

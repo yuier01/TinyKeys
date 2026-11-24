@@ -2,8 +2,17 @@ using TinyKeys.Interop;
 
 namespace TinyKeys.Services;
 
-internal readonly record struct KeyboardRepeatTimings(int DelayMilliseconds, int IntervalMilliseconds)
+internal readonly struct KeyboardRepeatTimings
 {
+    public KeyboardRepeatTimings(int delayMilliseconds, int intervalMilliseconds)
+    {
+        DelayMilliseconds = delayMilliseconds;
+        IntervalMilliseconds = intervalMilliseconds;
+    }
+
+    public int DelayMilliseconds { get; }
+    public int IntervalMilliseconds { get; }
+
     // Windows defaults: 500 ms before the first repeat, roughly 30 repeats/s.
     private const int DefaultDelayMilliseconds = 500;
     private const int DefaultIntervalMilliseconds = 40;
@@ -34,16 +43,14 @@ internal readonly record struct KeyboardRepeatTimings(int DelayMilliseconds, int
             speedSetting = 15;
         }
 
-        delaySetting = Math.Clamp(delaySetting, 0, 3);
-        speedSetting = Math.Clamp(speedSetting, 0, 31);
+        delaySetting = Math.Min(3, Math.Max(0, delaySetting));
+        speedSetting = Math.Min(31, Math.Max(0, speedSetting));
 
         var delayMs = 250 * (delaySetting + 1);
         // Windows exposes 0..31, roughly 2.5..30 repetitions per second.
         var repetitionsPerSecond = 2.5 + 27.5 * speedSetting / 31.0;
-        var intervalMs = Math.Clamp(
-            (int)Math.Round(1000.0 / repetitionsPerSecond),
-            25,
-            400);
+        var intervalMs = (int)Math.Round(1000.0 / repetitionsPerSecond);
+        intervalMs = Math.Min(400, Math.Max(25, intervalMs));
 
         if (!haveDelay)
         {

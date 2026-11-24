@@ -1,5 +1,4 @@
-using System.Windows;
-using System.Windows.Interop;
+using System.Windows.Forms;
 using TinyKeys.Interop;
 
 namespace TinyKeys.Services;
@@ -11,9 +10,21 @@ namespace TinyKeys.Services;
 /// </summary>
 internal static class WindowPlacement
 {
-    private readonly record struct MonitorInfo(IntPtr Handle, NativeMethods.RECT Work, bool IsPrimary);
+    private readonly struct MonitorInfo
+    {
+        public MonitorInfo(IntPtr handle, NativeMethods.RECT work, bool isPrimary)
+        {
+            Handle = handle;
+            Work = work;
+            IsPrimary = isPrimary;
+        }
 
-    public static void PositionAtStartup(Window window, IntPtr initialTarget)
+        public IntPtr Handle { get; }
+        public NativeMethods.RECT Work { get; }
+        public bool IsPrimary { get; }
+    }
+
+    public static void PositionAtStartup(IntPtr hwnd, IntPtr initialTarget)
     {
         var monitors = GetMonitors();
         if (monitors.Count == 0)
@@ -22,7 +33,6 @@ internal static class WindowPlacement
         }
 
         var chosen = ChooseMonitor(monitors, initialTarget);
-        var hwnd = new WindowInteropHelper(window).Handle;
         if (hwnd == IntPtr.Zero || !NativeMethods.GetWindowRect(hwnd, out var windowRect))
         {
             return;
@@ -54,10 +64,12 @@ internal static class WindowPlacement
                 initialTarget,
                 NativeMethods.MONITOR_DEFAULTTONEAREST);
 
-            var other = monitors.FirstOrDefault(m => m.Handle != browserMonitor);
-            if (other.Handle != IntPtr.Zero)
+            for (var i = 0; i < monitors.Count; i++)
             {
-                return other;
+                if (monitors[i].Handle != browserMonitor)
+                {
+                    return monitors[i];
+                }
             }
         }
 
@@ -67,18 +79,20 @@ internal static class WindowPlacement
                 cursor,
                 NativeMethods.MONITOR_DEFAULTTONEAREST);
 
-            var atCursor = monitors.FirstOrDefault(m => m.Handle == cursorMonitor);
-            if (atCursor.Handle != IntPtr.Zero)
+            for (var i = 0; i < monitors.Count; i++)
             {
-                return atCursor;
+                if (monitors[i].Handle == cursorMonitor)
+                {
+                    return monitors[i];
+                }
             }
         }
 
-        foreach (var monitor in monitors)
+        for (var i = 0; i < monitors.Count; i++)
         {
-            if (monitor.IsPrimary)
+            if (monitors[i].IsPrimary)
             {
-                return monitor;
+                return monitors[i];
             }
         }
 

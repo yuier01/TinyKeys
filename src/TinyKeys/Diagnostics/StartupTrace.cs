@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TinyKeys.Diagnostics;
@@ -50,8 +49,8 @@ internal static class StartupTrace
                 .AppendLine($"===== TinyKeys {version} startup =====")
                 .AppendLine($"When: {DateTimeOffset.Now:O}")
                 .AppendLine($"Process start: {ProcessStart:O}")
-                .AppendLine($"OS: {RuntimeInformation.OSDescription}")
-                .AppendLine($"Runtime: {RuntimeInformation.FrameworkDescription}")
+                .AppendLine($"OS: {Environment.OSVersion.VersionString}")
+                .AppendLine($"Runtime: CLR {Environment.Version}, {(Environment.Is64BitProcess ? "64-bit" : "32-bit")}")
                 .ToString();
 
             File.AppendAllText(path, header, Encoding.UTF8);

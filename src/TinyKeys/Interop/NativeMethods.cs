@@ -6,6 +6,8 @@ internal static class NativeMethods
 {
     public const int WH_MOUSE_LL = 14;
     public const uint WM_MOUSEWHEEL = 0x020A;
+    public const uint WM_NCLBUTTONDOWN = 0x00A1;
+    public const int HTCAPTION = 0x0002;
 
     public const uint EVENT_SYSTEM_FOREGROUND = 0x0003;
     public const uint WINEVENT_OUTOFCONTEXT = 0x0000;
@@ -142,6 +144,13 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ReleaseCapture();
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

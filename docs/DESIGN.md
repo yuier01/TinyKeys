@@ -1,6 +1,6 @@
 # TinyKeys
 
-**版本** v1.1.3 · **状态** 已实现  
+**版本** v1.2.0 · **状态** 已实现
 **用途** 一个白色小面板，把鼠标操作映射成 B 站网页播放器需要的键盘操作。
 
 ![TinyKeys 实际界面](./assets/ui-preview.png)
@@ -33,7 +33,7 @@
 └──────────────────────────────────────────────────┘
 ```
 
-- 白色卡片，约 440 × 152 DIP，圆角、细描边、柔和阴影。
+- 白色卡片，约 440 × 152 DIP，圆角、细描边；不额外绘制阴影，只请求 Windows 原生窗口阴影。
 - 三个浅灰色键帽按钮；右侧是浅粉色音量区。
 - 默认不置顶；点图钉后切换为悬浮最上层，按钮进入粉色选中态。
 - 可拖动、可最小化、可关闭，出现在任务栏。
@@ -87,16 +87,20 @@ B 站桌面端支持“短按右键快进、长按右键 2 倍速、松开恢复
 
 ## 6. 实现
 
-- C# / .NET 8 / WPF，单个项目，无第三方 NuGet 包。
+- C# / .NET Framework 4.8 / WinForms，单个项目。运行时无第三方依赖；`Microsoft.NETFramework.ReferenceAssemblies` 只在构建时使用。
+- 白色卡片由 GDI+ 自绘：`KeyButton`、`IconButton`、`VolumeZone` 均继承 `Control`，通过 `OnPaint` 绘制圆角、键帽、图钉和扬声器；窗口区域用圆角 `Region` 裁剪，标题区域用 `WM_NCLBUTTONDOWN` 拖动。
+- 从 v1.2.0 起不再使用 WPF/XAML。WinForms 冷启动只需加载很小的 UI 栈，避免 WPF 的程序集加载和 XAML 初始化开销。
 - `SendInput` 发送键盘按下、自动重复和抬起事件。
 - `SPI_GETKEYBOARDDELAY` / `SPI_GETKEYBOARDSPEED` 获取系统按键重复节奏。
 - `SetWinEventHook` 记住最近一次外部前台窗口。
-- 低级鼠标钩子（`WH_MOUSE_LL`）处理音量区滚轮，并阻止下层页面收到该滚轮。
+- 低级鼠标钩子（`WH_MOUSE_LL`）处理音量区滚轮，并阻止下层页面收到该滚轮；钩子延后到首帧之后安装，避免阻塞窗口显示。
 - 无网络请求，不需要管理员权限。
 
 ## 7. 启动诊断
 
-v1.1.3 在 `%LOCALAPPDATA%\TinyKeys\logs\startup.log` 记录每次启动的阶段耗时，用于定位冷启动问题。包含进程启动至 `App.OnStartup`、XAML 初始化、窗口显示/渲染、音量钩子安装等节点；不记录按键或网页内容。日志最大 512 KB，超出后轮换。
+`%LOCALAPPDATA%\TinyKeys\logs\startup.log` 记录每次启动的阶段耗时。v1.2.0 的节点包括 `Program.Main`、`WinForms initialized`、`MainForm` 构造、`OnHandleCreated`、窗口定位、`OnLoad`、`OnShown`、首帧绘制和音量钩子安装；不记录按键或网页内容。日志最大 512 KB，超出后轮换。
+
+v1.1.3 的 WPF 冷启动日志显示总耗时约 8.15 秒，其中约 4.86 秒发生在 `App.OnStartup` 之前，约 2.17 秒花在 XAML 初始化；这也是改用 WinForms 的依据。当前 WinForms 版本在本机的启动日志中首帧约 0.2 秒，冷启动仍需用同一日志复现确认。
 
 ## 8. 已知边界
 
@@ -105,6 +109,7 @@ v1.1.3 在 `%LOCALAPPDATA%\TinyKeys\logs\startup.log` 记录每次启动的阶�
 - 不显示播放状态、进度或音量数值。
 - 音量是浏览器所在进程之外的 Windows 系统音量。
 - 默认不置顶；如果被其他窗口挡住，用任务栏切回，或点图钉把它钉在最上层。
+- 需要 Windows 自带的 .NET Framework 4.8；发布目录中的 `TinyKeys.exe.config` 需与 exe 同目录。
 
 ## 9. 验收
 
