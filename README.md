@@ -25,9 +25,9 @@ dotnet run --project src\TinyKeys\TinyKeys.csproj
 dist\TinyKeys.exe
 ```
 
-发布物使用 Windows 自带的 .NET Framework 4.8（Windows 10 / 11 默认已安装）。`dist` 目录中的 `TinyKeys.exe.config` 需要和 exe 放在一起。构建输出目录 `dist/` 不提交到仓库。
+发布物是**单个 exe**，使用 Windows 自带的 .NET Framework 4.8（Windows 10 / 11 默认已安装）。不需要额外的 `.config` 或运行时文件；高 DPI 声明已内嵌在 exe 的 manifest 中。构建输出目录 `dist/` 不提交到仓库。
 
-> v1.2.0 把界面从 WPF / .NET 8 改为 WinForms / .NET Framework 4.8。之前的冷启动日志显示约 8 秒主要耗在 WPF / .NET 8 的加载和 XAML 初始化上；WinForms 版本当前日志中的首帧时间约为 0.2 秒级。
+> v1.2.0 把界面从 WPF / .NET 8 改为 WinForms / .NET Framework 4.8。之前的冷启动日志显示约 8 秒主要耗在 WPF / .NET 8 的加载和 XAML 初始化上；WinForms 版本当前日志中的首帧时间约为 0.2 秒级。v1.2.1 起去掉了自动生成的 `TinyKeys.exe.config`，整个程序只有一个 exe。
 
 ## 启动诊断日志
 
@@ -85,6 +85,7 @@ B 站的“长按右键 2 倍速”依赖的是按键保持状态，而不是连
 - 音量是 Windows 系统音量，不是 B 站播放器内部音量。
 - 仅支持已经获得焦点的 B 站视频页面；如果键盘焦点在地址栏或输入框，模拟按键会进入那个控件。
 - WinForms 版本使用 GDI+ 自绘白色卡片和控件，不依赖 WPF；窗口只请求系统原生 `CS_DROPSHADOW`，不额外引入分层窗口，阴影是否显示由 Windows 决定。
+- 发布目录只有一个 `TinyKeys.exe`，没有 `TinyKeys.exe.config`；之前的旧配置文件可以直接删除。
 
 ## 构建
 

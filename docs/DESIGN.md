@@ -1,6 +1,6 @@
 # TinyKeys
 
-**版本** v1.2.0 · **状态** 已实现
+**版本** v1.2.1 · **状态** 已实现
 **用途** 一个白色小面板，把鼠标操作映射成 B 站网页播放器需要的键盘操作。
 
 ![TinyKeys 实际界面](./assets/ui-preview.png)
@@ -94,6 +94,7 @@ B 站桌面端支持“短按右键快进、长按右键 2 倍速、松开恢复
 - `SPI_GETKEYBOARDDELAY` / `SPI_GETKEYBOARDSPEED` 获取系统按键重复节奏。
 - `SetWinEventHook` 记住最近一次外部前台窗口。
 - 低级鼠标钩子（`WH_MOUSE_LL`）处理音量区滚轮，并阻止下层页面收到该滚轮；钩子延后到首帧之后安装，避免阻塞窗口显示。
+- 单 exe 发布：设置 `GenerateSupportedRuntime=false`，不让 SDK 生成 `TinyKeys.exe.config`；DPI 声明保留在内嵌的 `app.manifest` 中。
 - 无网络请求，不需要管理员权限。
 
 ## 7. 启动诊断
@@ -109,7 +110,7 @@ v1.1.3 的 WPF 冷启动日志显示总耗时约 8.15 秒，其中约 4.86 秒�
 - 不显示播放状态、进度或音量数值。
 - 音量是浏览器所在进程之外的 Windows 系统音量。
 - 默认不置顶；如果被其他窗口挡住，用任务栏切回，或点图钉把它钉在最上层。
-- 需要 Windows 自带的 .NET Framework 4.8；发布目录中的 `TinyKeys.exe.config` 需与 exe 同目录。
+- 需要 Windows 自带的 .NET Framework 4.8；发布目录中只有 `TinyKeys.exe`，没有外部配置文件。
 
 ## 9. 验收
 
